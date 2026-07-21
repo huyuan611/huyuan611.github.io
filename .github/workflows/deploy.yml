@@ -1,0 +1,121 @@
+name: Deploy portfolio mirror
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mirror the published portfolio
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://tang-yongqiao-music-portfolio.tyq2335629768.workers.dev"
+          mkdir -p site/music
+          curl --fail --location --retry 3 "$base/" --output site/index.html
+          curl --fail --location --retry 3 "$base/music" --output site/music/index.html
+
+          cat > /tmp/portfolio-assets.txt <<'EOF'
+          /favicon.png
+          /favicon.svg
+          /file.svg
+          /globe.svg
+          /og.png
+          /window.svg
+          /assets/BorderGlow-CAqk-cCY.js
+          /assets/BorderGlow-DG_0ZscU.css
+          /assets/framework-DjPHiq1u.js
+          /assets/GridScanBackground-DA_rqZf4.js
+          /assets/gsap-DSMxIHmA.js
+          /assets/index-C1HsH5AA.js
+          /assets/index-CBo-AvlC.css
+          /assets/layout-segment-context-2SViHpxH.js
+          /assets/page-D4c2bFff.js
+          /assets/page-DIh0XlQm.js
+          /assets/page-IPpsixtP.css
+          /assets/performance-original.png
+          /assets/PlatformLinks-DmklTaj8.js
+          /assets/portrait-cutout.png
+          /assets/rolldown-runtime-S-ySWqyJ.js
+          /assets/ScrollTrigger-CIGykjTZ.js
+          /assets/studio-loop.mp4
+          /assets/studio-poster.jpg
+          /assets/artists/bekzada.jpg
+          /assets/artists/caoyuan-xiongdi.jpg
+          /assets/artists/erpang-u.jpg
+          /assets/artists/fu-ruyi.jpg
+          /assets/artists/gao-sansan.jpg
+          /assets/artists/huang-meiqi.jpg
+          /assets/artists/keran-eli.jpg
+          /assets/artists/luo-xiansheng.jpg
+          /assets/artists/paopao-mate.jpg
+          /assets/artists/prince-x.jpg
+          /assets/artists/qingran.jpg
+          /assets/artists/qiyuan.jpg
+          /assets/artists/quan-yaojiu.jpg
+          /assets/artists/scarlett.jpg
+          /assets/artists/wowo.jpg
+          /assets/artists/wu-ganxuan.jpg
+          /assets/artists/xiao-lu.jpg
+          /assets/artists/xiao-yumeng.jpg
+          /assets/artists/yuerqi.jpg
+          /assets/artists/zeng-ruolan.jpg
+          /assets/audio/mofa-kongjian-preview.mp3
+          /assets/icons/bilibili.svg
+          /assets/icons/douyin.svg
+          /assets/icons/xiaohongshu.svg
+          /assets/music/chanfu.jpg
+          /assets/music/fanfan.jpg
+          /assets/music/fengxin.jpg
+          /assets/music/fengye.jpg
+          /assets/music/gucheng-apple.jpg
+          /assets/music/gucheng.jpg
+          /assets/music/gudu.jpg
+          /assets/music/hanshu.jpg
+          /assets/music/jingjiu.jpg
+          /assets/music/just-let-it-go.jpg
+          /assets/music/keshiguniang.jpg
+          /assets/music/liangzhi.jpg
+          /assets/music/luoye.jpg
+          /assets/music/mofa-kongjian.webp
+          /assets/music/qiufeng.jpg
+          /assets/music/shanliang.jpg
+          /assets/music/sheihui.jpg
+          /assets/music/xidan.jpg
+          /assets/music/yishi-female.jpg
+          /assets/music/yishi-memory.jpg
+          EOF
+
+          while IFS= read -r path; do
+            mkdir -p "site$(dirname "$path")"
+            curl --fail --location --retry 3 "$base$path" --output "site$path"
+          done < /tmp/portfolio-assets.txt
+
+          touch site/.nojekyll
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
