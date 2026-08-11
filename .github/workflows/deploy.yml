@@ -106,6 +106,25 @@ jobs:
             curl --fail --location --retry 3 "$base$path" --output "site$path"
           done < /tmp/portfolio-assets.txt
 
+          cat > site/assets/mobile-hero-portrait-fix.css <<'EOF'
+          @media (width <= 760px) {
+            .hero-portrait {
+              bottom: 5% !important;
+              width: min(165vw, 700px) !important;
+              transform: translateX(-58%) !important;
+            }
+          }
+          EOF
+          python3 - <<'PY'
+          from pathlib import Path
+          link = '<link rel="stylesheet" href="/assets/mobile-hero-portrait-fix.css">'
+          for html_path in [Path('site/index.html'), Path('site/music/index.html')]:
+              html = html_path.read_text(encoding='utf-8')
+              if 'mobile-hero-portrait-fix.css' not in html:
+                  html = html.replace('</head>', f'{link}</head>')
+              html_path.write_text(html, encoding='utf-8')
+          PY
+
           touch site/.nojekyll
 
       - name: Configure GitHub Pages
