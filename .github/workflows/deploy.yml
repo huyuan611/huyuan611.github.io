@@ -111,7 +111,7 @@ jobs:
             .hero-portrait {
               bottom: 5% !important;
               width: min(165vw, 700px) !important;
-              transform: translateX(-58%) !important;
+              transform: translateX(-70%) !important;
             }
           }
           EOF
