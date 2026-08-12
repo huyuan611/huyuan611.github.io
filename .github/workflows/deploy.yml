@@ -41,12 +41,7 @@ jobs:
           /assets/BorderGlow-DG_0ZscU.css
           /assets/framework-DjPHiq1u.js
           /assets/GridScanBackground-DA_rqZf4.js
-          /assets/gsap-DSMxIHmA.js
-          /assets/index-C1HsH5AA.js
-          /assets/index-CBo-AvlC.css
-          /assets/layout-segment-context-2SViHpxH.js
           /assets/page-D4c2bFff.js
-          /assets/page-DIh0XlQm.js
           /assets/page-IPpsixtP.css
           /assets/performance-original.png
           /assets/PlatformLinks-DmklTaj8.js
@@ -106,6 +101,8 @@ jobs:
             curl --fail --location --retry 3 "$base$path" --output "site$path"
           done < /tmp/portfolio-assets.txt
 
+          cp -R bundled-assets/. site/assets/
+
           cat > site/assets/mobile-hero-portrait-fix.css <<'EOF'
           @media (width <= 760px) {
             .hero-portrait {
@@ -117,9 +114,18 @@ jobs:
           EOF
           python3 - <<'PY'
           from pathlib import Path
+          replacements = {
+              '/assets/gsap-DSMxIHmA.js': '/assets/gsap-CHaqZGsL.js',
+              '/assets/index-C1HsH5AA.js': '/assets/index-Ni4PnPGY.js',
+              '/assets/index-CBo-AvlC.css': '/assets/index-fyd0SUwJ.css',
+              '/assets/layout-segment-context-2SViHpxH.js': '/assets/layout-segment-context-B6W31LQ0.js',
+              '/assets/page-DIh0XlQm.js': '/assets/page-DSR3KbJu.js',
+          }
           link = '<link rel="stylesheet" href="/assets/mobile-hero-portrait-fix.css">'
           for html_path in [Path('site/index.html'), Path('site/music/index.html')]:
               html = html_path.read_text(encoding='utf-8')
+              for old, new in replacements.items():
+                  html = html.replace(old, new)
               if 'mobile-hero-portrait-fix.css' not in html:
                   html = html.replace('</head>', f'{link}</head>')
               html_path.write_text(html, encoding='utf-8')
