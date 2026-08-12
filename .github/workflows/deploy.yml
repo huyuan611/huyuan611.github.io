@@ -21,6 +21,9 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
+      - name: Check out deployment assets
+        uses: actions/checkout@v4
+
       - name: Mirror the published portfolio
         shell: bash
         run: |
